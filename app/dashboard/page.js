@@ -8,30 +8,24 @@ import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/f
 import { loadStripe } from "@stripe/stripe-js";
 import { WhatsappShareButton, WhatsappIcon } from "react-share";
 
-// Initialise Stripe en dehors du composant
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
-  const [userLink, setUserLink] = useState(""); // Valeur par défaut vide
+  const [userLink, setUserLink] = useState("");
   const [loadingPayment, setLoadingPayment] = useState({});
-  const [isLoading, setIsLoading] = useState(true); // État pour gérer le chargement initial
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifie l'état de l'authentification
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (!user) {
-        // Redirige vers la page de connexion si non connecté
         if (typeof window !== "undefined") {
           window.location.href = "/login";
         }
       } else {
-        // Si connecté, mets à jour userLink
         if (typeof window !== "undefined") {
           setUserLink(`${window.location.origin}/send/${user.uid}`);
         }
-
-        // Charge les messages
         const q = query(collection(db, "messages"), where("recipient", "==", user.uid));
         const unsubscribeMessages = onSnapshot(q, (snapshot) => {
           const userMessages = snapshot.docs.map((doc) => ({
@@ -39,21 +33,16 @@ export default function Dashboard() {
             ...doc.data(),
           }));
           setMessages(userMessages);
-          setIsLoading(false); // Fin du chargement
+          setIsLoading(false);
         });
-
-        // Nettoie l'abonnement aux messages
         return () => unsubscribeMessages();
       }
     });
-
-    // Nettoie l'abonnement à l'authentification
     return () => unsubscribeAuth();
   }, []);
 
   const handlePayment = async (messageId) => {
     setLoadingPayment((prev) => ({ ...prev, [messageId]: true }));
-
     try {
       const response = await fetch("/api/stripe", {
         method: "POST",
@@ -61,13 +50,11 @@ export default function Dashboard() {
         body: JSON.stringify({ messageId }),
       });
       const { id } = await response.json();
-
       const stripe = await stripePromise;
       await stripe.redirectToCheckout({ sessionId: id });
     } catch (error) {
       alert("Erreur lors du paiement : " + error.message);
     }
-
     setLoadingPayment((prev) => ({ ...prev, [messageId]: false }));
   };
 
@@ -82,50 +69,67 @@ export default function Dashboard() {
     const urlParams = new URLSearchParams(search);
     const success = urlParams.get("success");
     const messageId = urlParams.get("messageId");
-
     if (success === "true" && messageId) {
       unlockMessage(messageId);
     }
   }, []);
 
-  // Affiche un message de chargement pendant l'initialisation
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Chargement...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600 text-lg">Chargement...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-3xl font-bold mb-6">Tes messages anonymes</h1>
-      <p>Partage ce lien pour recevoir des messages :</p>
-      <input value={userLink} readOnly className="border p-2 mb-4 w-full" />
-      <div className="mb-6">
-        {userLink && (
-          <WhatsappShareButton url={userLink} title="Envoie-moi un message anonyme sur SecretWhisper !">
-            <WhatsappIcon size={32} round />
-          </WhatsappShareButton>
-        )}
-      </div>
-      <div>
-        {messages.map((msg) => (
-          <div key={msg.id} className="bg-gray-100 p-4 rounded mb-4">
-            <p>{msg.paid ? msg.content : "Paye pour voir ce message"}</p>
-            {!msg.paid && (
-              <button
-                onClick={() => handlePayment(msg.id)}
-                disabled={loadingPayment[msg.id]}
-                className={`bg-green-500 text-white p-2 rounded mt-2 ${
-                  loadingPayment[msg.id] ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Tes messages anonymes</h1>
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <p className="text-gray-700 mb-2">Partage ce lien pour recevoir des messages :</p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <input
+              value={userLink}
+              readOnly
+              className="w-full sm:flex-1 p-3 border border-gray-300 rounded-md bg-gray-50"
+            />
+            {userLink && (
+              <WhatsappShareButton
+                url={userLink}
+                title="Envoie-moi un message anonyme sur SecretWhisper !"
+                className="flex items-center justify-center w-full sm:w-auto"
               >
-                {loadingPayment[msg.id] ? "Chargement..." : "Payer 1€"}
-              </button>
+                <WhatsappIcon size={40} round className="hover:scale-105 transition-transform" />
+              </WhatsappShareButton>
             )}
           </div>
-        ))}
+        </div>
+        <div className="grid gap-6">
+          {messages.map((msg) => (
+            <div key={msg.id} className="bg-white rounded-xl shadow-md p-6">
+              <p className="text-gray-800 mb-4">
+                {msg.paid ? msg.content : "Ce message est verrouillé. Paye pour le voir."}
+              </p>
+              {!msg.paid && (
+                <button
+                  onClick={() => handlePayment(msg.id)}
+                  disabled={loadingPayment[msg.id]}
+                  className={`w-full py-3 text-white font-semibold rounded-md transition duration-200 ${
+                    loadingPayment[msg.id]
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
+                >
+                  {loadingPayment[msg.id] ? "Chargement..." : "Payer 1€"}
+                </button>
+              )}
+            </div>
+          ))}
+          {messages.length === 0 && (
+            <p className="text-gray-600 text-center">Aucun message pour l'instant.</p>
+          )}
+        </div>
       </div>
     </div>
   );

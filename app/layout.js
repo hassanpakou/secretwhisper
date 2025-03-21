@@ -1,29 +1,18 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Inter } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Metadonnées spécifiques à SecretWhisper
 export const metadata = {
   title: "SecretWhisper",
-  description: "Envoie et reçois des messages anonymes en toute simplicité",
+  description: "Envoie et reçois des messages anonymes",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="fr">
+      <body className={inter.className}>
+        <main>{children}</main>
       </body>
     </html>
   );
