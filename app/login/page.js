@@ -21,13 +21,28 @@ export default function Login() {
       console.log("Connexion réussie :", userCredential.user);
       router.push("/dashboard");
     } catch (err) {
-      console.error("Erreur de connexion :", err.message);
-      setError("Email ou mot de passe incorrect");
+      console.error("Erreur de connexion :", err.code, err.message);
+      switch (err.code) {
+        case "auth/invalid-email":
+          setError("L'email est invalide.");
+          break;
+        case "auth/user-not-found":
+          setError("Aucun utilisateur trouvé avec cet email.");
+          break;
+        case "auth/wrong-password":
+          setError("Mot de passe incorrect.");
+          break;
+        case "auth/too-many-requests":
+          setError("Trop de tentatives. Réessayez plus tard.");
+          break;
+        default:
+          setError("Une erreur est survenue. Vérifiez vos identifiants.");
+      }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">Connexion</h1>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
