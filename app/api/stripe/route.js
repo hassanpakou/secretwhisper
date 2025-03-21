@@ -1,37 +1,40 @@
-import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Initialise Stripe avec ta clé secrète
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
-});
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
-  try {
-    const { messageId } = await request.json(); // Récupère l'ID du message depuis le frontend
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return new Response(JSON.stringify({ error: "Stripe API key is missing" }), {
+      status: 500,
+    });
+  }
 
-    // Crée une session de paiement
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2023-10-16",
+  });
+
+  try {
+    const { amount } = await request.json();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
-            currency: "eur",
+            currency: "usd",
             product_data: {
-              name: "Déverrouiller un message anonyme",
+              name: "SecretWhisper Payment",
             },
-            unit_amount: 100, // 1€ (en centimes)
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true&messageId=${messageId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
+      success_url: `${request.headers.get("origin")}/success`,
+      cancel_url: `${request.headers.get("origin")}/cancel`,
     });
-
-    return NextResponse.json({ id: session.id });
+    return new Response(JSON.stringify({ id: session.id }), { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
