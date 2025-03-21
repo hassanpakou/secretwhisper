@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [userLink, setUserLink] = useState("");
   const [loadingPayment, setLoadingPayment] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
@@ -26,13 +27,17 @@ export default function Dashboard() {
         if (typeof window !== "undefined") {
           setUserLink(`${window.location.origin}/send/${user.uid}`);
         }
-        const q = query(collection(db, "messages"), where("recipient", "==", user.uid));
+        const q = query(collection(db, "messages"), where("recipientId", "==", user.uid));
         const unsubscribeMessages = onSnapshot(q, (snapshot) => {
           const userMessages = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
           setMessages(userMessages);
+          setIsLoading(false);
+        }, (err) => {
+          console.error("Erreur de récupération en temps réel :", err);
+          setError("Erreur lors de la récupération des messages : " + err.message);
           setIsLoading(false);
         });
         return () => unsubscribeMessages();
@@ -47,12 +52,13 @@ export default function Dashboard() {
       const response = await fetch("/api/stripe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messageId }),
+        body: JSON.stringify({ amount: 100, messageId }), // 1.00 USD
       });
       const { id } = await response.json();
       const stripe = await stripePromise;
       await stripe.redirectToCheckout({ sessionId: id });
     } catch (error) {
+      console.error("Erreur de paiement :", error);
       alert("Erreur lors du paiement : " + error.message);
     }
     setLoadingPayment((prev) => ({ ...prev, [messageId]: false }));
@@ -60,7 +66,7 @@ export default function Dashboard() {
 
   const unlockMessage = async (messageId) => {
     const messageRef = doc(db, "messages", messageId);
-    await updateDoc(messageRef, { paid: true });
+    await updateDoc(messageRef, { revealed: true });
   };
 
   useEffect(() => {
@@ -74,6 +80,11 @@ export default function Dashboard() {
     }
   }, []);
 
+  const getWhatsAppLink = (content) => {
+    const encodedMessage = encodeURIComponent(`Voici un message de SecretWhisper : ${content}`);
+    return `https://wa.me/?text=${encodedMessage}`;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -85,7 +96,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Tes messages anonymes</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+          Tes messages anonymes
+        </h1>
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <p className="text-gray-700 mb-2">Partage ce lien pour recevoir des messages :</p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -105,13 +118,15 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="grid gap-6">
           {messages.map((msg) => (
-            <div key={msg.id} className="bg-white rounded-xl shadow-md p-6">
-              <p className="text-gray-800 mb-4">
-                {msg.paid ? msg.content : "Ce message est verrouillé. Paye pour le voir."}
+            <div key={msg.id} className="bg-white rounded-xl shadow-md p-6 relative">
+              <p className="text-gray-800 mb-4 pr-20">{msg.content}</p>
+              <p className="text-gray-600 mb-4">
+                Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
               </p>
-              {!msg.paid && (
+              {!msg.revealed && (
                 <button
                   onClick={() => handlePayment(msg.id)}
                   disabled={loadingPayment[msg.id]}
@@ -124,10 +139,18 @@ export default function Dashboard() {
                   {loadingPayment[msg.id] ? "Chargement..." : "Payer 1€"}
                 </button>
               )}
+              <a
+                href={getWhatsAppLink(msg.content)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"
+              >
+                Partager sur WhatsApp
+              </a>
             </div>
           ))}
           {messages.length === 0 && (
-            <p className="text-gray-600 text-center">Aucun message pour l'instant.</p>
+            <p className="text-gray-600 text-center">Aucun message pour l’instant.</p>
           )}
         </div>
       </div>
