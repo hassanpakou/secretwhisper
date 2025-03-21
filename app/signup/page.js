@@ -15,7 +15,7 @@ export default function Signup() {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push("/dashboard");
     } catch (error) {
-      alert("Erreur : " + error.message);
+      alert('Erreur : ' + error.message); // Apostrophe échappée
     }
   };
 
