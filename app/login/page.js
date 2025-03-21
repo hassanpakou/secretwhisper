@@ -2,31 +2,26 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react"; // Ajoute useEffect
+import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { initializeFirebase } from "../../lib/firebase"; // Change l'import
+import { auth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [auth, setAuth] = useState(null); // État pour auth
   const router = useRouter();
-
-  // Initialise Firebase côté client
-  useEffect(() => {
-    const { auth } = initializeFirebase();
-    setAuth(auth);
-  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!auth) return; // Attend que auth soit prêt
+    console.log("Tentative de connexion avec :", { email, password });
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Connexion réussie :", userCredential.user);
       router.push("/dashboard");
     } catch (err) {
+      console.error("Erreur de connexion :", err.message);
       setError("Email ou mot de passe incorrect");
     }
   };
@@ -67,8 +62,7 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            disabled={!auth} // Désactive jusqu'à ce que auth soit chargé
-            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-200 disabled:bg-gray-400"
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-200"
           >
             Se connecter
           </button>
