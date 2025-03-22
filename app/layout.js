@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
         <main className="min-h-screen flex flex-col">{children}</main>
         <footer className="bg-gray-800 text-white p-4 mt-auto">
           <div className="max-w-7xl mx-auto text-center">
-            <p>© 2025 SecretWhisper. Tous droits réservés.</p>
+            <p>© 2025 SecretWhisper. Tous droits réservés Made in DRC.</p>
             <p className="text-sm mt-2">
               Créé par{" "}
               <a href="https://github.com/hassanpakou" className="underline hover:text-blue-400">
