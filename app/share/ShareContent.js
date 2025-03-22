@@ -37,7 +37,7 @@ export default function ShareContent() {
         envoie-moi des messages anonymes !
       </h1>
       <div className="bg-white bg-opacity-20 rounded-lg p-4 w-full max-w-md text-center">
-        <p className="text-white text-lg mb-2">Paste your LINK here!</p>
+        <p className="text-white text-lg mb-2">Collez le lien ici!</p>
         <a
           href={userLink || "#"}
           className="text-blue-300 text-sm break-all hover:underline"
@@ -48,8 +48,7 @@ export default function ShareContent() {
         </a>
       </div>
       <div className="mt-8 text-center">
-        <p className="text-3xl font-bold text-white">NGL</p>
-        <p className="text-sm text-white">anonymous q&a</p>
+        <p className="text-sm text-white">Version 0.1</p>
       </div>
     </div>
   );

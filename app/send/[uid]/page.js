@@ -35,7 +35,7 @@ export default function SendMessage() {
         content,
         recipientId: uid,
         revealed: false,
-        timestamp: serverTimestamp(), // Ajoute la date et l'heure actuelles
+        timestamp: serverTimestamp(),
       });
       console.log("Message envoyé avec succès");
       router.push("/dashboard");
@@ -45,37 +45,88 @@ export default function SendMessage() {
     }
   };
 
+  const handleCreateAccount = () => {
+    router.push("/signup");
+  };
+
   return (
-    <div className="p-4 flex-grow">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
-        Envoyer un message anonyme
-      </h1>
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-      <form
-        onSubmit={handleSend}
-        className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6"
-      >
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-            Message
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="Votre message..."
-            rows="4"
-            required
-          />
+    <div
+      className="min-h-screen flex items-center justify-center p-4 sm:p-8"
+      style={{
+        background: "linear-gradient(to bottom right, #e0f7fa, #ffffff)",
+      }}
+    >
+      <div className="w-full max-w-md mx-auto">
+        {/* Bouton "Créer un compte" en haut à droite */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={handleCreateAccount}
+            className="py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200 shadow-md"
+          >
+            Créer un compte
+          </button>
         </div>
-        <button
-          type="submit"
-          className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
-        >
-          Envoyer
-        </button>
-      </form>
+
+        {/* Conteneur principal du formulaire */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10 transform transition-all duration-300 hover:shadow-2xl">
+          {/* Icône d'enveloppe */}
+          <div className="flex justify-center mb-6">
+            <svg
+              className="w-12 h-12 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+
+          {/* Titre */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-900 mb-8">
+            Envoyer un message anonyme
+          </h1>
+
+          {/* Message d'erreur */}
+          {error && (
+            <p className="text-red-500 text-center mb-6 bg-red-50 p-3 rounded-lg">
+              {error}
+            </p>
+          )}
+
+          {/* Formulaire */}
+          <form onSubmit={handleSend} className="space-y-6">
+            <div>
+              <label
+                htmlFor="content"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Votre message
+              </label>
+              <textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200 text-gray-800 placeholder-gray-400"
+                placeholder="Écrivez votre message ici..."
+                rows="5"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-200 transform hover:scale-105 shadow-md"
+            >
+              Envoyer
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
