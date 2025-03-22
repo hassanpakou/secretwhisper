@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { auth, db } from "../../lib/firebase";
 import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { loadStripe } from "@stripe/stripe-js";
+import { signOut } from "firebase/auth";
 import { WhatsappShareButton, WhatsappIcon } from "react-share";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
@@ -13,6 +14,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
   const [userLink, setUserLink] = useState("");
+  const [shareLink, setShareLink] = useState("");
   const [loadingPayment, setLoadingPayment] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,8 +26,10 @@ export default function Dashboard() {
           window.location.href = "/login";
         }
       } else {
-        if (typeof window !== "undefined") {
-          setUserLink(`${window.location.origin}/send/${user.uid}`);
+        if (typeof window !== "undefined" && window.location) {
+          const origin = window.location.origin;
+          setUserLink(`${origin}/send/${user.uid}`);
+          setShareLink(`${origin}/share?uid=${user.uid}`);
         }
         const q = query(collection(db, "messages"), where("recipientId", "==", user.uid));
         const unsubscribeMessages = onSnapshot(q, (snapshot) => {
@@ -69,6 +73,18 @@ export default function Dashboard() {
     await updateDoc(messageRef, { revealed: true });
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+      setError("Erreur lors de la déconnexion : " + error.message);
+    }
+  };
+
   useEffect(() => {
     if (typeof window === "undefined" || !window.location) return;
     const search = window.location.search || "";
@@ -81,6 +97,7 @@ export default function Dashboard() {
   }, []);
 
   const getWhatsAppLink = (content) => {
+    if (!content) return "";
     const encodedMessage = encodeURIComponent(`Voici un message de SecretWhisper : ${content}`);
     return `https://wa.me/?text=${encodedMessage}`;
   };
@@ -96,6 +113,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleLogout}
+            className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+          >
+            Déconnexion
+          </button>
+        </div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
           Tes messages anonymes
         </h1>
@@ -103,53 +128,56 @@ export default function Dashboard() {
           <p className="text-gray-700 mb-2">Partage ce lien pour recevoir des messages :</p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <input
-              value={userLink}
+              value={userLink || ""}
               readOnly
               className="w-full sm:flex-1 p-3 border border-gray-300 rounded-md bg-gray-50"
             />
-            {userLink && (
-              <WhatsappShareButton
-                url={userLink}
-                title="Envoie-moi un message anonyme sur SecretWhisper !"
-                className="flex items-center justify-center w-full sm:w-auto"
-              >
-                <WhatsappIcon size={40} round className="hover:scale-105 transition-transform" />
-              </WhatsappShareButton>
-            )}
+            <div className="flex gap-2 w-full sm:w-auto justify-center">
+              {shareLink && (
+                <WhatsappShareButton
+                  url={shareLink}
+                  title="Envoie-moi un message anonyme sur SecretWhisper !"
+                  className="flex items-center justify-center"
+                >
+                  <WhatsappIcon size={40} round className="hover:scale-105 transition-transform" />
+                </WhatsappShareButton>
+              )}
+            </div>
           </div>
         </div>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <div className="grid gap-6">
-          {messages.map((msg) => (
-            <div key={msg.id} className="bg-white rounded-xl shadow-md p-6 relative">
-              <p className="text-gray-800 mb-4 pr-20">{msg.content}</p>
-              <p className="text-gray-600 mb-4">
-                Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
-              </p>
-              {!msg.revealed && (
-                <button
-                  onClick={() => handlePayment(msg.id)}
-                  disabled={loadingPayment[msg.id]}
-                  className={`w-full py-3 text-white font-semibold rounded-md transition duration-200 ${
-                    loadingPayment[msg.id]
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700"
-                  }`}
+          {messages && messages.length > 0 ? (
+            messages.map((msg) => (
+              <div key={msg.id} className="bg-white rounded-xl shadow-md p-6 relative">
+                <p className="text-gray-800 mb-4 pr-20">{msg.content || "Contenu indisponible"}</p>
+                <p className="text-gray-600 mb-4">
+                  Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
+                </p>
+                {!msg.revealed && (
+                  <button
+                    onClick={() => handlePayment(msg.id)}
+                    disabled={loadingPayment[msg.id]}
+                    className={`w-full py-3 text-white font-semibold rounded-md transition duration-200 ${
+                      loadingPayment[msg.id]
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
+                  >
+                    {loadingPayment[msg.id] ? "Chargement..." : "Payer 1€"}
+                  </button>
+                )}
+                <a
+                  href={getWhatsAppLink(msg.content)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"
                 >
-                  {loadingPayment[msg.id] ? "Chargement..." : "Payer 1€"}
-                </button>
-              )}
-              <a
-                href={getWhatsAppLink(msg.content)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"
-              >
-                Partager sur WhatsApp
-              </a>
-            </div>
-          ))}
-          {messages.length === 0 && (
+                  WhatsApp
+                </a>
+              </div>
+            ))
+          ) : (
             <p className="text-gray-600 text-center">Aucun message pour l’instant.</p>
           )}
         </div>
