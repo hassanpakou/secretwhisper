@@ -96,10 +96,22 @@ export default function Dashboard() {
     }
   }, []);
 
-  const getWhatsAppLink = (content) => {
-    if (!content) return "";
-    const encodedMessage = encodeURIComponent(`Voici un message de SecretWhisper : ${content}`);
-    return `https://wa.me/?text=${encodedMessage}`;
+  const getMessageShareLink = (messageId) => {
+    if (typeof window === "undefined" || !window.location) return "";
+    return `${window.location.origin}/message/${messageId}`;
+  };
+
+  // Fonction pour formater la date et l'heure
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return "Date inconnue";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   if (isLoading) {
@@ -151,8 +163,11 @@ export default function Dashboard() {
             messages.map((msg) => (
               <div key={msg.id} className="bg-white rounded-xl shadow-md p-6 relative">
                 <p className="text-gray-800 mb-4 pr-20">{msg.content || "Contenu indisponible"}</p>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 mb-2">
                   Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
+                </p>
+                <p className="text-gray-500 text-sm mb-4">
+                  Reçu le : {formatDateTime(msg.timestamp)}
                 </p>
                 {!msg.revealed && (
                   <button
@@ -168,7 +183,7 @@ export default function Dashboard() {
                   </button>
                 )}
                 <a
-                  href={getWhatsAppLink(msg.content)}
+                  href={getMessageShareLink(msg.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { doc, setDoc } from "firebase/firestore";
-import { db, auth } from "../../../lib/firebase";
+import { auth, db } from "../../../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function SendMessage() {
   const [content, setContent] = useState("");
@@ -15,21 +15,33 @@ export default function SendMessage() {
     e.preventDefault();
     if (!auth.currentUser) {
       setError("Vous devez être connecté pour envoyer un message.");
+      console.log("Utilisateur non connecté");
+      return;
+    }
+
+    if (!content.trim()) {
+      setError("Le message ne peut pas être vide.");
       return;
     }
 
     try {
-      const messageId = `${auth.currentUser.uid}_${uid}_${Date.now()}`;
-      await setDoc(doc(db, "messages", messageId), {
+      console.log("Envoi du message :", {
+        senderId: auth.currentUser.uid,
+        recipientId: uid,
+        content,
+      });
+      await addDoc(collection(db, "messages"), {
         senderId: auth.currentUser.uid,
         content,
         recipientId: uid,
         revealed: false,
+        timestamp: serverTimestamp(), // Ajoute la date et l'heure actuelles
       });
+      console.log("Message envoyé avec succès");
       router.push("/dashboard");
     } catch (err) {
       console.error("Erreur d'envoi :", err);
-      setError("Erreur lors de l'envoi du message.");
+      setError("Erreur lors de l'envoi du message : " + err.message);
     }
   };
 
@@ -67,32 +79,3 @@ export default function SendMessage() {
     </div>
   );
 }
-const handleSend = async (e) => {
-  e.preventDefault();
-  if (!auth.currentUser) {
-    setError("Vous devez être connecté pour envoyer un message.");
-    console.log("Utilisateur non connecté");
-    return;
-  }
-
-  try {
-    const messageId = `${auth.currentUser.uid}_${uid}_${Date.now()}`;
-    console.log("Envoi du message :", {
-      messageId,
-      senderId: auth.currentUser.uid,
-      recipientId: uid,
-      content,
-    });
-    await setDoc(doc(db, "messages", messageId), {
-      senderId: auth.currentUser.uid,
-      content,
-      recipientId: uid,
-      revealed: false,
-    });
-    console.log("Message envoyé avec succès");
-    router.push("/dashboard");
-  } catch (err) {
-    console.error("Erreur d'envoi :", err);
-    setError("Erreur lors de l'envoi du message.");
-  }
-};
