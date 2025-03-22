@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
             <p className="text-sm mt-2">
               Créé par{" "}
               <a href="https://github.com/hassanpakou" className="underline hover:text-blue-400">
-                Dalmon Pakou nestor Nestor Fabrice | Etudiant UPC
+                Dalmo Pakou nestor Nestor Fabrice | Etudiant UPC
               </a>
             </p>
           </div>
