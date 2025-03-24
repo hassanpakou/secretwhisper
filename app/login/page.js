@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../lib/firebase";
@@ -42,13 +40,19 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-6">Connexion</h1>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+    <div className="gradient-bg flex items-center justify-center p-4 sm:p-8">
+      <div className="w-full max-w-md card rounded-2xl p-8 shadow-xl fade-in">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-white mb-8">
+          Connexion
+        </h1>
+        {error && (
+          <p className="text-red-400 text-center mb-6 bg-red-500 bg-opacity-20 p-3 rounded-lg">
+            {error}
+          </p>
+        )}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
               Email
             </label>
             <input
@@ -56,13 +60,13 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 input-style rounded-lg"
               placeholder="votre@email.com"
               required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
               Mot de passe
             </label>
             <input
@@ -70,21 +74,21 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-4 input-style rounded-lg"
               placeholder="••••••••"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-200"
+            className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg button-style"
           >
             Se connecter
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Pas de compte wichper ?{" "}
-          <a href="/signup" className="text-blue-600 hover:underline">
+        <p className="mt-4 text-center text-sm text-gray-200">
+          Pas de compte ?{" "}
+          <a href="/signup" className="text-indigo-300 hover:underline">
             Inscrivez-vous
           </a>
         </p>

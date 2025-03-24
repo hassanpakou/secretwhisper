@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-4">
+    <footer className="bg-black bg-opacity-80 text-white py-4">
       <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4">
         <p className="text-sm">© 2025 SecretWhisper. Tous droits réservés.</p>
         <p className="text-sm mt-2">

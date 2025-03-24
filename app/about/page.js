@@ -1,10 +1,8 @@
 export default function About() {
     return (
-        <div className="flex flex-col items-center justify-center p-4 sm:p-8" style={{ background: "linear-gradient(to bottom, #1e3a8a, #f9a8d4)" }}>
-        {/* Conteneur principal */}
+      <div className="gradient-bg flex flex-col items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-2xl mx-auto text-center">
-          {/* Icône de message */}
-          <div className="relative mb-8">
+          <div className="relative mb-8 fade-in">
             <svg
               className="w-16 h-16 text-white mx-auto"
               fill="none"
@@ -24,42 +22,37 @@ export default function About() {
             </span>
           </div>
   
-          {/* Titre */}
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 fade-in">
             À propos de SecretWhisper
           </h1>
   
-          {/* Description */}
-          <p className="text-lg sm:text-xl text-white mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-200 mb-8 leading-relaxed fade-in">
             SecretWhisper est une plateforme qui te permet d’envoyer et de recevoir des messages anonymes en toute simplicité. Que tu veuilles partager un secret, poser une question ou simplement t’amuser, nous sommes là pour toi !
           </p>
   
-          {/* Avantages */}
-          <div className="bg-white bg-opacity-20 rounded-lg p-6 mb-8">
+          <div className="card rounded-lg p-6 mb-8 fade-in">
             <h2 className="text-2xl font-bold text-white mb-4">
               Pourquoi utiliser SecretWhisper ?
             </h2>
-            <ul className="text-white text-lg space-y-3">
+            <ul className="text-gray-200 text-lg space-y-3">
               <li>📩 Envoie des messages anonymes à tes amis.</li>
               <li>🔒 Protège ton identité en toute sécurité.</li>
               <li>💸 Crée un compte pour découvrir qui t’a écrit (seulement 1$ !).</li>
             </ul>
           </div>
   
-          {/* Appel à l’action */}
-          <div className="mt-8">
+          <div className="mt-8 fade-in">
             <a
               href="/signup"
-              className="inline-block py-3 px-6 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-200 transform hover:scale-105 shadow-md"
+              className="inline-block py-3 px-6 bg-indigo-600 text-white font-semibold rounded-lg button-style"
             >
               Crée un compte maintenant !
             </a>
           </div>
   
-          {/* Branding */}
-          <div className="mt-12">
+          <div className="mt-12 fade-in">
             <p className="text-3xl font-bold text-white">SecretWhisper</p>
-            <p className="text-sm text-white">Messages anonymes, émotions sincères</p>
+            <p className="text-sm text-gray-200">Messages anonymes, émotions sincères</p>
           </div>
         </div>
       </div>

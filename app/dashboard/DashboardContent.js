@@ -145,21 +145,21 @@ export default function DashboardContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-gray-600 text-lg">Chargement...</p>
+      <div className="gradient-bg flex items-center justify-center">
+        <p className="text-white text-lg">Chargement...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-100 p-4 md:p-8">
+    <div className="gradient-bg p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Boutons de navigation */}
-        <div className="flex justify-end mb-4 gap-3">
+        <div className="flex justify-end mb-4 gap-3 fade-in">
           {isAuthenticated ? (
             <button
               onClick={handleLogout}
-              className="py-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+              className="py-2 px-4 bg-red-600 text-white rounded-md button-style"
             >
               Déconnexion
             </button>
@@ -167,13 +167,13 @@ export default function DashboardContent() {
             <>
               <button
                 onClick={handleLogin}
-                className="py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200"
+                className="py-2 px-4 bg-blue-600 text-white rounded-md button-style"
               >
                 Se connecter
               </button>
               <button
                 onClick={handleSignup}
-                className="py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"
+                className="py-2 px-4 bg-indigo-600 text-white rounded-md button-style"
               >
                 Créer un compte
               </button>
@@ -183,24 +183,24 @@ export default function DashboardContent() {
 
         {/* Modale pour les utilisateurs non connectés */}
         {showLoginPrompt && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in">
+            <div className="card rounded-lg p-6 max-w-sm w-full shadow-xl">
+              <h2 className="text-xl font-bold text-white mb-4">
                 Connectez-vous pour voir l’expéditeur !
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-200 mb-6">
                 Vous devez être connecté pour voir qui vous a écrit. Connectez-vous ou créez un compte !
               </p>
               <div className="flex gap-4">
                 <button
                   onClick={handleLogin}
-                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
+                  className="flex-1 py-2 bg-blue-600 text-white rounded-lg button-style"
                 >
                   Se connecter
                 </button>
                 <button
                   onClick={handleSignup}
-                  className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+                  className="flex-1 py-2 bg-indigo-600 text-white rounded-lg button-style"
                 >
                   Créer un compte
                 </button>
@@ -209,16 +209,16 @@ export default function DashboardContent() {
           </div>
         )}
 
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-6 fade-in">
           Tes messages anonymes
         </h1>
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <p className="text-gray-700 mb-2">Partage ce lien pour recevoir des messages :</p>
+        <div className="card rounded-xl p-6 mb-6 fade-in">
+          <p className="text-gray-200 mb-2">Partage ce lien pour recevoir des messages :</p>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <input
               value={userLink || ""}
               readOnly
-              className="w-full sm:flex-1 p-3 border border-gray-300 rounded-md bg-gray-50"
+              className="w-full sm:flex-1 p-3 input-style rounded-md"
             />
             <div className="flex gap-2 w-full sm:w-auto justify-center">
               {shareLink && (
@@ -227,32 +227,40 @@ export default function DashboardContent() {
                   title="Envoie-moi un message anonyme sur SecretWhisper !"
                   className="flex items-center justify-center"
                 >
-                  <WhatsappIcon size={40} round className="hover:scale-105 transition-transform" />
+                  <WhatsappIcon size={40} round className="button-style" />
                 </WhatsappShareButton>
               )}
             </div>
           </div>
         </div>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-center mb-4 bg-red-500 bg-opacity-20 p-3 rounded-lg fade-in">
+            {error}
+          </p>
+        )}
         <div className="grid gap-6">
           {messages && messages.length > 0 ? (
-            messages.map((msg) => (
-              <div key={msg.id} className="bg-white rounded-xl shadow-md p-6 relative">
-                <p className="text-gray-800 mb-4 pr-20">{msg.content || "Contenu indisponible"}</p>
-                <p className="text-gray-600 mb-2">
+            messages.map((msg, index) => (
+              <div
+                key={msg.id}
+                className="card rounded-xl p-6 relative fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <p className="text-gray-200 mb-4 pr-20">{msg.content || "Contenu indisponible"}</p>
+                <p className="text-gray-300 mb-2">
                   Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
                 </p>
-                <p className="text-gray-500 text-sm mb-4">
+                <p className="text-gray-400 text-sm mb-4">
                   Reçu le : {formatDateTime(msg.timestamp)}
                 </p>
                 {!msg.revealed && (
                   <button
                     onClick={() => handlePayment(msg.id)}
                     disabled={loadingPayment[msg.id]}
-                    className={`w-full py-3 text-white font-semibold rounded-md transition duration-200 ${
+                    className={`w-full py-3 text-white font-semibold rounded-md button-style ${
                       loadingPayment[msg.id]
                         ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
+                        : "bg-green-600"
                     }`}
                   >
                     {loadingPayment[msg.id] ? "Chargement..." : "Payer 1$"}
@@ -262,14 +270,14 @@ export default function DashboardContent() {
                   href={getMessageShareLink(msg.id)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"
+                  className="absolute bottom-2 right-2 py-1 px-2 bg-green-500 text-white text-sm rounded-md button-style"
                 >
                   WhatsApp
                 </a>
               </div>
             ))
           ) : (
-            <p className="text-gray-600 text-center">Aucun message pour l’instant.</p>
+            <p className="text-gray-200 text-center fade-in">Aucun message pour l’instant.</p>
           )}
         </div>
       </div>
