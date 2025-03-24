@@ -12,6 +12,7 @@ export default function Home() {
         <Link href="/login" className="bg-gray-500 text-white p-2 rounded">
           Se connecter
         </Link>
+
       </div>
     </div>
   );

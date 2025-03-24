@@ -48,7 +48,7 @@ export default function ShareContent() {
         </a>
       </div>
       <div className="mt-8 text-center">
-        <p className="text-sm text-white">Version 0.1</p>
+        <p className="text-sm text-white">Version 0.0.2</p>
       </div>
     </div>
   );
