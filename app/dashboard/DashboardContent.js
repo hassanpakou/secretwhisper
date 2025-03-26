@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth, db } from "../../lib/firebase";
-import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { loadStripe } from "@stripe/stripe-js";
 import { signOut } from "firebase/auth";
 import { WhatsappShareButton, WhatsappIcon } from "react-share";
@@ -17,6 +17,7 @@ export default function DashboardContent() {
   const [userLink, setUserLink] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [loadingPayment, setLoadingPayment] = useState({});
+  const [loadingDelete, setLoadingDelete] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -95,6 +96,24 @@ export default function DashboardContent() {
   const unlockMessage = async (messageId) => {
     const messageRef = doc(db, "messages", messageId);
     await updateDoc(messageRef, { revealed: true });
+  };
+
+  const handleDelete = async (messageId) => {
+    if (!isAuthenticated) {
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    setLoadingDelete((prev) => ({ ...prev, [messageId]: true }));
+    try {
+      const messageRef = doc(db, "messages", messageId);
+      await deleteDoc(messageRef);
+      console.log("Message supprimé avec succès :", messageId);
+    } catch (error) {
+      console.error("Erreur lors de la suppression du message :", error);
+      setError("Erreur lors de la suppression du message : " + error.message);
+    }
+    setLoadingDelete((prev) => ({ ...prev, [messageId]: false }));
   };
 
   const handleLogout = async () => {
@@ -246,7 +265,57 @@ export default function DashboardContent() {
                 className="card rounded-xl p-6 relative fade-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <p className="text-gray-200 mb-4 pr-20">{msg.content || "Contenu indisponible"}</p>
+                {/* Bouton Supprimer superposé */}
+                <button
+                  onClick={() => handleDelete(msg.id)}
+                  disabled={loadingDelete[msg.id]}
+                  className={`absolute top-3 right-3 p-2 rounded-full text-white transition duration-200 ${
+                    loadingDelete[msg.id]
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700"
+                  }`}
+                  title="Supprimer le message"
+                >
+                  {loadingDelete[msg.id] ? (
+                    <svg
+                      className="w-5 h-5 animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8H4z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4a1 1 0 011 1v1H9V4a1 1 0 011-1zm-5 4h12"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                <p className="text-gray-200 mb-4 pr-10">{msg.content || "Contenu indisponible"}</p>
                 <p className="text-gray-300 mb-2">
                   Expéditeur : {msg.revealed ? msg.senderId : "Anonyme"}
                 </p>
