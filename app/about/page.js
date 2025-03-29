@@ -53,7 +53,7 @@ export default function About() {
           <div className="mt-12 fade-in">
             <p className="text-3xl font-bold text-white">SecretWhisper</p>
             <p className="text-sm text-gray-200">Messages anonymes, émotions sincères</p>
-            <p className="text-sm text-gray-200">Version 0.3</p>
+            <p className="text-sm text-gray-200">Version 0.4</p>
           </div>
         </div>
       </div>
